@@ -20,9 +20,23 @@
 
 #include <UI.h>
 
-int main() {
-  UI::init();
-  UI::quit();
+void UI::init() {
+  initscr();
 
-  return 0;
+  int split = COLS / SPLIT_RATIO;
+
+  create_window(LINES, split, 0, 0);
+
+  create_window(LINES, COLS - split, 0, split);
+
+  getchar();
+}
+
+void UI::quit() { endwin(); }
+
+WINDOW *UI::create_window(int height, int width, int starty, int startx) {
+  WINDOW *local_window = newwin(height, width, starty, startx);
+  box(local_window, 0, 0);
+  wrefresh(local_window);
+  return local_window;
 }
