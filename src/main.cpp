@@ -1,28 +1,47 @@
-// Copyright (c) 2025 Adam Paseka
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+/*
 
-#include <UI.h>
+imaps_folders.cpp
+-----------------
+
+Connects to IMAP server and lists recursively all folders.
+
+
+Copyright (C) 2016, Tomislav Karastojkovic (http://www.alepho.com).
+
+Distributed under the FreeBSD license, see the accompanying file LICENSE or
+copy at http://www.freebsd.org/copyright/freebsd-license.html.
+
+*/
+#include <iostream>
+#include <mailio/imap.hpp>
+#include <mailio/message.hpp>
+#include <string>
+
+#include "MailClient.h"
+#include "TUI.h"
+
+using mailio::message;
+using std::cout;
+using std::endl;
+using std::string;
 
 int main() {
-  UI::init();
-  UI::quit();
+  string server = "gmail.com";
+
+  MailClient client(server);
+  client.login("testervimail@gmail.com", "bcgxcgsmtejfdyhu");
+
+  message msg = client.fetch_mail();
+  string strg_msg;
+  msg.format(strg_msg);
+
+  cout << "From: " << msg.from_to_string() << endl;
+  cout << "To: " << msg.recipients_to_string() << endl;
+  cout << "Subject: " << msg.subject() << endl;
+
+  msg.parse(strg_msg);
+
+  cout << strg_msg << endl;
 
   return 0;
 }

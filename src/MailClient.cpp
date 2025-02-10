@@ -20,20 +20,33 @@
  * SOFTWARE.
  */
 
-#ifndef INCLUDE_UI_H_
-#define INCLUDE_UI_H_
+#include "MailClient.h"
 
-#include <ncurses.h>
+#include <spdlog/spdlog.h>
 
-#define SPLIT_RATIO 4
+#include <string>
 
-class UI {
- public:
-  static void init();
-  static void quit();
+using mailio::dialog_error;
+using mailio::imap_error;
+using mailio::imaps;
+using mailio::message;
+using std::string;
 
- private:
-  static WINDOW* create_window(int height, int width, int starty, int startx);
-};
+void MailClient::login(string mail, string password) {
+  try {
+    connection_.authenticate(mail, password, imaps::auth_method_t::LOGIN);
+  } catch (imap_error &exc) {
+    spdlog::error(exc.what());
+  } catch (dialog_error &exc) {
+    spdlog::error(exc.what());
+  }
+}
 
-#endif  // INCLUDE_UI_H_
+MailClient::MailClient(string &server)
+    : connection_(imaps("imap." + server, IMAPS_SERVER)) {}
+
+message MailClient::fetch_mail() {
+  message msg;
+  connection_.fetch("inbox", 2, msg);
+  return msg;
+}

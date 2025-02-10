@@ -13,21 +13,30 @@ include_directories(${INCLUDE_DIR})
 
 file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
 
-find_package(Curses REQUIRED)
-include_directories(${CURSES_INCLUDE_DIRS})
-
-find_package(spdlog REQUIRED)
-
+find_package(Boost REQUIRED COMPONENTS system thread date_time regex)
+find_package(OpenSSL REQUIRED)
 find_package(mailio REQUIRED)
+find_package(Curses REQUIRED)
+find_package(spdlog REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 
+target_include_directories(vimail
+    PRIVATE
+    ${Boost_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIR}
+    ${CURSES_INCLUDE_DIR}
+)
+
 target_link_libraries(vimail
     PRIVATE
-    ${CURSES_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${CURSES_LIBRARY}
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    pthread
+    mailio
     spdlog::spdlog
-    $<$<BOOL:${MINGW}>:ws2_32>
-    mailio::mailio
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

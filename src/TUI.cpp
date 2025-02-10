@@ -18,9 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <UI.h>
+#include <TUI.h>
 
-void UI::init() {
+void TUI::init() {
   initscr();
 
   int split = COLS / SPLIT_RATIO;
@@ -32,11 +32,12 @@ void UI::init() {
   getchar();
 }
 
-void UI::quit() { endwin(); }
+void TUI::quit() { endwin(); }
 
-WINDOW *UI::create_window(int height, int width, int starty, int startx) {
+WINDOW *TUI::create_window(int height, int width, int starty, int startx) {
   WINDOW *local_window = newwin(height, width, starty, startx);
   box(local_window, 0, 0);
   wrefresh(local_window);
+
   return local_window;
 }
