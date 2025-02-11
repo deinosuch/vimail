@@ -32,15 +32,15 @@ int main() {
 
   MailClient client(server);
   client.login("testervimail@gmail.com", "bcgxcgsmtejfdyhu");
-
   message msg = client.fetch_mail();
 
   cout << "From: " << msg.from_to_string() << endl;
   cout << "To: " << msg.recipients_to_string() << endl;
   cout << "Subject: " << msg.subject() << endl;
 
-  TUI::init();
-  TUI::quit();
+  TUI ui("Inbox", "From", "To", "Subject", "Content");
+
+  ui.quit();
 
   return 0;
 }

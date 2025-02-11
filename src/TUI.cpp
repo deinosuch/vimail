@@ -27,35 +27,41 @@
 
 using std::string;
 
-void TUI::init() {
+WINDOW* create_window(int height, int width, int starty, int startx,
+                      const string& title) {
+  WINDOW* local_window = newwin(height, width, starty, startx);
+  box(local_window, 0, 0);
+  mvwprintw(local_window, 0, TITLE_OFFSET, "%s", title.c_str());
+  wrefresh(local_window);
+
+  return local_window;
+}
+
+TUI::TUI(const string& column_title, const string& left_header_title,
+         const string& right_header_title, const string& header_title,
+         const string& content_title) {
   initscr();
   noecho();
 
-  int split = COLS / SPLIT_RATIO;
+  int left_width = COLS / SPLIT_RATIO;
+  int right_width = COLS - left_width;
+  int small_header_width = right_width / 2;
 
-  WINDOW* list = create_window(LINES, split, 0, 0);
-  mvwprintw(list, 0, 3, "INBOX");
-  wattron(list, A_REVERSE);
-  mvwprintw(list, 1, 1, "Subject - sender");
-
-  wattroff(list, A_REVERSE);
-  wrefresh(list);
-
-  WINDOW* content = create_window(LINES, COLS - split, 0, split);
-
-  /*spdlog::info("TUI initialized");*/
+  column_ = create_window(LINES, left_width, 0, 0, column_title);
+  left_header_ = create_window(HEADER_HEIGHT, small_header_width, 0, left_width,
+                               left_header_title);
+  right_header_ =
+      create_window(HEADER_HEIGHT, small_header_width, 0,
+                    left_width + small_header_width, right_header_title);
+  header_ = create_window(HEADER_HEIGHT, right_width, HEADER_HEIGHT, left_width,
+                          header_title);
+  content_ = create_window(LINES - 2 * HEADER_HEIGHT, right_width,
+                           2 * HEADER_HEIGHT, left_width, content_title);
 
   getchar();
 }
 
 void TUI::quit() { endwin(); }
 
-WINDOW* TUI::create_window(int height, int width, int starty, int startx) {
-  WINDOW* local_window = newwin(height, width, starty, startx);
-  box(local_window, 0, 0);
-  wrefresh(local_window);
-
-  return local_window;
-}
-
-void TUI::add_element(const string& name, const string& content) {}
+void TUI::add_element(const string& bold_header, const string& light_header,
+                      const std::string& header, const string& content) {}

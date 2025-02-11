@@ -27,16 +27,26 @@
 
 #include <string>
 
-#define SPLIT_RATIO 4
+constexpr int SPLIT_RATIO = 4;
+constexpr int TITLE_OFFSET = 3;
+constexpr int HEADER_HEIGHT = 3;
 
 class TUI {
  public:
-  static void init();
-  static void quit();
-  static void add_element(const std::string &name, const std::string &content);
+  TUI(const std::string& column_title, const std::string& left_header_title,
+      const std::string& right_header_title, const std::string& header_title,
+      const std::string& content_title);
+  void quit();
+  void add_element(const std::string& left_header,
+                   const std::string& right_header, const std::string& header,
+                   const std::string& content);
 
  private:
-  static WINDOW *create_window(int height, int width, int starty, int startx);
+  WINDOW* column_;
+  WINDOW* content_;
+  WINDOW* left_header_;
+  WINDOW* right_header_;
+  WINDOW* header_;
 };
 
 #endif  // INCLUDE_TUI_H_
