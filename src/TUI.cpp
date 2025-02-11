@@ -18,26 +18,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <TUI.h>
+#include "TUI.h"
+
+#include <ncurses.h>
+#include <spdlog/spdlog.h>
+
+#include <string>
+
+using std::string;
 
 void TUI::init() {
   initscr();
+  noecho();
 
   int split = COLS / SPLIT_RATIO;
 
-  create_window(LINES, split, 0, 0);
+  WINDOW* list = create_window(LINES, split, 0, 0);
+  mvwprintw(list, 0, 3, "INBOX");
+  wattron(list, A_REVERSE);
+  mvwprintw(list, 1, 1, "Subject - sender");
 
-  create_window(LINES, COLS - split, 0, split);
+  wattroff(list, A_REVERSE);
+  wrefresh(list);
+
+  WINDOW* content = create_window(LINES, COLS - split, 0, split);
+
+  /*spdlog::info("TUI initialized");*/
 
   getchar();
 }
 
 void TUI::quit() { endwin(); }
 
-WINDOW *TUI::create_window(int height, int width, int starty, int startx) {
-  WINDOW *local_window = newwin(height, width, starty, startx);
+WINDOW* TUI::create_window(int height, int width, int starty, int startx) {
+  WINDOW* local_window = newwin(height, width, starty, startx);
   box(local_window, 0, 0);
   wrefresh(local_window);
 
   return local_window;
 }
+
+void TUI::add_element(const string& name, const string& content) {}

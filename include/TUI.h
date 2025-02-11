@@ -25,15 +25,18 @@
 
 #include <ncurses.h>
 
+#include <string>
+
 #define SPLIT_RATIO 4
 
 class TUI {
  public:
   static void init();
   static void quit();
+  static void add_element(const std::string &name, const std::string &content);
 
  private:
-  static WINDOW* create_window(int height, int width, int starty, int startx);
+  static WINDOW *create_window(int height, int width, int starty, int startx);
 };
 
 #endif  // INCLUDE_TUI_H_
