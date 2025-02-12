@@ -24,6 +24,7 @@
 #include <spdlog/spdlog.h>
 
 #include <string>
+#include <utility>
 
 using std::string;
 
@@ -40,6 +41,8 @@ WINDOW* create_window(int height, int width, int starty, int startx,
 TUI::TUI(const string& column_title, const string& left_header_title,
          const string& right_header_title, const string& header_title,
          const string& content_title) {
+  spdlog::info("Initiliazing terminal app");
+
   initscr();
   noecho();
 
@@ -53,15 +56,34 @@ TUI::TUI(const string& column_title, const string& left_header_title,
   right_header_ =
       create_window(HEADER_HEIGHT, small_header_width, 0,
                     left_width + small_header_width, right_header_title);
+
   header_ = create_window(HEADER_HEIGHT, right_width, HEADER_HEIGHT, left_width,
                           header_title);
   content_ = create_window(LINES - 2 * HEADER_HEIGHT, right_width,
                            2 * HEADER_HEIGHT, left_width, content_title);
 
-  getchar();
+  spdlog::info("Created app windows");
 }
 
-void TUI::quit() { endwin(); }
+void TUI::quit() {
+  getchar();
+  endwin();
+}
 
-void TUI::add_element(const string& bold_header, const string& light_header,
-                      const std::string& header, const string& content) {}
+void TUI::add_element(element&& el) {
+  els.push_back(std::move(el));
+  spdlog::info("Added new mail: " + els[els.size() - 1].header);
+}
+
+void TUI::populate() {
+  for (size_t i = 0; i < els.size(); ++i) {
+    wmove(column_, i + 1, 1);
+
+    wattron(column_, A_BOLD);
+    wprintw(column_, "%s", els[i].header.c_str());
+    wattroff(column_, A_BOLD);
+
+    wprintw(column_, " %s", els[i].left_header.c_str());
+  }
+  wrefresh(column_);
+}

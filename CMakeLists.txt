@@ -21,26 +21,28 @@ find_package(spdlog REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 
-target_include_directories(vimail
-    PRIVATE
-    ${Boost_INCLUDE_DIRS}
-    ${OPENSSL_INCLUDE_DIR}
-    ${CURSES_INCLUDE_DIR}
-)
+target_include_directories(
+  vimail PRIVATE ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR}
+                 ${CURSES_INCLUDE_DIR})
 
-target_link_libraries(vimail
-    PRIVATE
-    ${Boost_LIBRARIES}
-    ${CURSES_LIBRARY}
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    pthread
-    mailio
-    spdlog::spdlog
-)
+target_link_libraries(
+  vimail
+  PRIVATE ${Boost_LIBRARIES}
+          ${CURSES_LIBRARY}
+          OpenSSL::SSL
+          OpenSSL::Crypto
+          pthread
+          mailio
+          spdlog::spdlog)
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  message(STATUS "Configuring Debug Build")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+  target_compile_options(${PROJECT_NAME} PRIVATE -g -O0)
 endif()

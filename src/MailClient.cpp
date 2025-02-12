@@ -24,15 +24,19 @@
 
 #include <spdlog/spdlog.h>
 
+#include <list>
+#include <mailio/mime.hpp>
 #include <string>
 
 using mailio::dialog_error;
 using mailio::imap_error;
 using mailio::imaps;
 using mailio::message;
+using std::list;
+using std::map;
 using std::string;
 
-void MailClient::login(string mail, string password) {
+void MailClient::login(const string &mail, const string &password) {
   try {
     connection_.authenticate(mail, password, imaps::auth_method_t::LOGIN);
   } catch (imap_error &exc) {
@@ -40,13 +44,25 @@ void MailClient::login(string mail, string password) {
   } catch (dialog_error &exc) {
     spdlog::error(exc.what());
   }
+
+  spdlog::info("Successfully logged in");
 }
 
-MailClient::MailClient(string &server)
-    : connection_(imaps("imap." + server, IMAPS_SERVER)) {}
+MailClient::MailClient(const string &server)
+    : connection_(imaps("imap." + server, IMAPS_SERVER)) {
+  curr_mailbox_ = "inbox";
+  spdlog::info("Connected to server: " + server);
+}
 
-message MailClient::fetch_mail() {
-  message msg;
-  connection_.fetch("inbox", 2, msg);
-  return msg;
+void MailClient::fetch_mail(map<unsigned long, message> &messs) {
+  imaps::mailbox_stat_t stats = connection_.select(curr_mailbox_);
+  list<imaps::messages_range_t> range = {{1, stats.messages_no}};
+  try {
+    connection_.fetch(range, messs, false, false,
+                      mailio::codec::line_len_policy_t::NONE);
+  } catch (const mailio::mime_error &exc) {
+    spdlog::error(exc.what());
+  }
+
+  spdlog::info("Fetched messages from: " + curr_mailbox_);
 }

@@ -26,6 +26,7 @@
 #include <ncurses.h>
 
 #include <string>
+#include <vector>
 
 constexpr int SPLIT_RATIO = 4;
 constexpr int TITLE_OFFSET = 3;
@@ -33,13 +34,18 @@ constexpr int HEADER_HEIGHT = 3;
 
 class TUI {
  public:
+  struct element {
+    std::string left_header;
+    std::string right_header;
+    std::string header;
+    std::string content;
+  };
   TUI(const std::string& column_title, const std::string& left_header_title,
       const std::string& right_header_title, const std::string& header_title,
       const std::string& content_title);
   void quit();
-  void add_element(const std::string& left_header,
-                   const std::string& right_header, const std::string& header,
-                   const std::string& content);
+  void add_element(element&& el);
+  void populate();
 
  private:
   WINDOW* column_;
@@ -47,6 +53,7 @@ class TUI {
   WINDOW* left_header_;
   WINDOW* right_header_;
   WINDOW* header_;
+  std::vector<element> els;
 };
 
 #endif  // INCLUDE_TUI_H_

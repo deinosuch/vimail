@@ -20,24 +20,47 @@
  * SOFTWARE.
  */
 
-#ifndef INCLUDE_MAILCLIENT_H_
-#define INCLUDE_MAILCLIENT_H_
+#include "API.h"
 
-#include <mailio/imap.hpp>
-#include <map>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
+
+#include <mailio/message.hpp>
 #include <string>
 
-constexpr int IMAPS_SERVER = 993;
+#include "MailClient.h"
+#include "TUI.h"
 
-class MailClient {
- private:
-  mailio::imaps connection_;
-  std::string curr_mailbox_;
+using mailio::message;
+using std::map;
+using std::string;
 
- public:
-  void login(const std::string &mail, const std::string &password);
-  explicit MailClient(const std::string &server);
-  void fetch_mail(std::map<unsigned long, mailio::message> &messs);
-};
+TUI::element export_message(const message& mess) {
+  return {mess.from_to_string(), mess.recipients_to_string(), mess.subject(),
+          mess.content()};
+}
 
-#endif  // INCLUDE_MAILCLIENT_H_
+void API::init() {
+  auto logger = spdlog::basic_logger_mt("file_logger", "logs.txt", true);
+  spdlog::set_pattern("[%H:%M:%S:%e] [%l] %v");
+  logger->flush_on(spdlog::level::info);
+  spdlog::set_default_logger(logger);
+
+  string server = "gmail.com";
+
+  spdlog::info("Initializing...");
+
+  MailClient mc(server);
+  mc.login("testervimail@gmail.com", "bcgxcgsmtejfdyhu");
+  map<unsigned long, message> msgs;
+  mc.fetch_mail(msgs);
+
+  TUI ui("Inbox", "From", "To", "Subject", "Content");
+  for (unsigned long i = 1; i < msgs.size() + 1; ++i) {
+    ui.add_element(export_message(msgs[i]));
+  }
+
+  ui.populate();
+
+  ui.quit();
+}
