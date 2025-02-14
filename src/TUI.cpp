@@ -23,6 +23,7 @@
 #include <ncurses.h>
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -36,6 +37,25 @@ WINDOW* create_window(int height, int width, int starty, int startx,
   wrefresh(local_window);
 
   return local_window;
+}
+
+void clear_area(WINDOW* win, int start_y, int start_x, int height, int width) {
+  for (int y = 0; y < height; ++y) {
+    wmove(win, start_y + y, start_x);
+    for (int x = 0; x < width; ++x) {
+      waddch(win, ' ');
+    }
+  }
+  wrefresh(win);
+}
+
+void print_to_window(WINDOW* win, const std::string& content) {
+  int x_max, y_max;
+  getmaxyx(win, y_max, x_max);
+  clear_area(win, 1, 1, y_max - 2, x_max - 2);
+  wmove(win, 1, 1);
+  wprintw(win, "%s", content.c_str());
+  wrefresh(win);
 }
 
 TUI::TUI(const string& column_title, const string& left_header_title,
@@ -62,6 +82,8 @@ TUI::TUI(const string& column_title, const string& left_header_title,
   content_ = create_window(LINES - 2 * HEADER_HEIGHT, right_width,
                            2 * HEADER_HEIGHT, left_width, content_title);
 
+  current_ = 0;
+
   spdlog::info("Created app windows");
 }
 
@@ -71,19 +93,59 @@ void TUI::quit() {
 }
 
 void TUI::add_element(element&& el) {
-  els.push_back(std::move(el));
-  spdlog::info("Added new mail: " + els[els.size() - 1].header);
+  els_.push_back(std::move(el));
+  spdlog::info("Added new mail: " + els_[els_.size() - 1].header);
 }
 
-void TUI::populate() {
-  for (size_t i = 0; i < els.size(); ++i) {
-    wmove(column_, i + 1, 1);
+void TUI::run() {
+  spdlog::info("running application");
 
-    wattron(column_, A_BOLD);
-    wprintw(column_, "%s", els[i].header.c_str());
-    wattroff(column_, A_BOLD);
+  int x_column_max, y_column_max;
+  getmaxyx(column_, y_column_max, x_column_max);
+  size_t shown_mails = std::min((size_t)y_column_max, els_.size());
+  while (true) {
+    for (size_t i = 0; i < shown_mails; ++i) {
+      if (i == current_) {
+        wattron(column_, A_REVERSE);
+      }
+      element& el = els_[i];
+      wmove(column_, i + 1, 1);
 
-    wprintw(column_, " %s", els[i].left_header.c_str());
+      wattron(column_, A_BOLD);
+      wprintw(column_, "%s", el.header.c_str());
+      wattroff(column_, A_BOLD);
+
+      wprintw(column_, " %s", el.left_header.c_str());
+
+      int x, y;
+      getyx(column_, y, x);
+      string end_line(x_column_max - x - 1, ' ');
+      wprintw(column_, "%s", end_line.c_str());
+
+      wattroff(column_, A_REVERSE);
+    }
+    wrefresh(column_);
+
+    print_mail_(current_);
+
+    char input = getchar();
+
+    switch (input) {
+      case UP:
+        current_ -= current_ != 0;
+        break;
+      case DOWN:
+        current_ += current_ != els_.size() - 1;
+        break;
+    }
   }
-  wrefresh(column_);
+}
+
+void TUI::print_mail_(size_t mail_no) {
+  element& el = els_[mail_no];
+
+  print_to_window(left_header_, el.left_header);
+  print_to_window(right_header_, el.right_header);
+  print_to_window(header_, el.header);
+  print_to_window(content_, el.content);
 }

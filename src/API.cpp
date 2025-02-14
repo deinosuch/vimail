@@ -60,7 +60,7 @@ void API::init() {
     ui.add_element(export_message(msgs[i]));
   }
 
-  ui.populate();
+  ui.run();
 
   ui.quit();
 }

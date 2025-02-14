@@ -32,6 +32,9 @@ constexpr int SPLIT_RATIO = 4;
 constexpr int TITLE_OFFSET = 3;
 constexpr int HEADER_HEIGHT = 3;
 
+constexpr char UP = 'k';
+constexpr char DOWN = 'j';
+
 class TUI {
  public:
   struct element {
@@ -45,7 +48,7 @@ class TUI {
       const std::string& content_title);
   void quit();
   void add_element(element&& el);
-  void populate();
+  void run();
 
  private:
   WINDOW* column_;
@@ -53,7 +56,10 @@ class TUI {
   WINDOW* left_header_;
   WINDOW* right_header_;
   WINDOW* header_;
-  std::vector<element> els;
+  std::vector<element> els_;
+  size_t current_;
+
+  void print_mail_(size_t mail_no);
 };
 
 #endif  // INCLUDE_TUI_H_
