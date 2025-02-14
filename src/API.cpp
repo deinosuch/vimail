@@ -36,8 +36,17 @@ using std::map;
 using std::string;
 
 TUI::element export_message(const message& mess) {
+  std::string content;
+  if (mess.content_type().type == mailio::mime::media_type_t::MULTIPART) {
+    content = mess.parts()[0].content();
+  } else if (mess.content_type().type == mailio::mime::media_type_t::TEXT) {
+    content = mess.content();
+  } else {
+    spdlog::error("Unknown mail media type");
+  }
+
   return {mess.from_to_string(), mess.recipients_to_string(), mess.subject(),
-          mess.content()};
+          content};
 }
 
 void API::init() {
@@ -56,7 +65,7 @@ void API::init() {
   mc.fetch_mail(msgs);
 
   TUI ui("Inbox", "From", "To", "Subject", "Content");
-  for (unsigned long i = 1; i < msgs.size() + 1; ++i) {
+  for (unsigned long i = msgs.size(); i >= 1; --i) {
     ui.add_element(export_message(msgs[i]));
   }
 

@@ -24,6 +24,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -52,9 +53,28 @@ void clear_area(WINDOW* win, int start_y, int start_x, int height, int width) {
 void print_to_window(WINDOW* win, const std::string& content) {
   int x_max, y_max;
   getmaxyx(win, y_max, x_max);
-  clear_area(win, 1, 1, y_max - 2, x_max - 2);
+  y_max -= 2;
+  x_max -= 2;
+  clear_area(win, 1, 1, y_max, x_max);
   wmove(win, 1, 1);
-  wprintw(win, "%s", content.c_str());
+  int y;
+  y = 1;
+  std::istringstream iss(content);
+  string line;
+  while (std::getline(iss, line)) {
+    while (line.length() > x_max) {
+      if (y > y_max) {
+        break;
+      }
+      mvwprintw(win, y++, 1, "%s", line.substr(0, x_max).c_str());
+      line = line.substr(x_max);
+    }
+    if (y > y_max) {
+      break;
+    }
+
+    mvwprintw(win, y++, 1, "%s", line.c_str());
+  }
   wrefresh(win);
 }
 
@@ -147,5 +167,6 @@ void TUI::print_mail_(size_t mail_no) {
   print_to_window(left_header_, el.left_header);
   print_to_window(right_header_, el.right_header);
   print_to_window(header_, el.header);
+  /*spdlog::info("printing content: " + el.content);*/
   print_to_window(content_, el.content);
 }
