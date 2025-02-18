@@ -35,8 +35,26 @@ class MailClient {
   std::string curr_mailbox_;
 
  public:
-  void login(const std::string &mail, const std::string &password);
+  /**
+   * Creates a MailClient object and connects to a mail server
+   *
+   * @param server Server to connect to
+   */
   explicit MailClient(const std::string &server);
+
+  /**
+   * Logs in to a mail server
+   *
+   * \param mail Mail address
+   * \param password Password for the address
+   */
+  void login(const std::string &mail, const std::string &password);
+
+  /**
+   * Gets mail from a selected mail folder
+   *
+   * @param messs Map to be filled with mails
+   */
   void fetch_mail(std::map<unsigned long, mailio::message> &messs);
 };
 

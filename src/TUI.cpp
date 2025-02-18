@@ -167,6 +167,5 @@ void TUI::print_mail_(size_t mail_no) {
   print_to_window(left_header_, el.left_header);
   print_to_window(right_header_, el.right_header);
   print_to_window(header_, el.header);
-  /*spdlog::info("printing content: " + el.content);*/
   print_to_window(content_, el.content);
 }

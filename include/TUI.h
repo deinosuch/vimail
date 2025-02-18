@@ -37,17 +37,36 @@ constexpr char DOWN = 'j';
 
 class TUI {
  public:
+  /**
+   * Struct for TUI content
+   */
   struct element {
     std::string left_header;
     std::string right_header;
     std::string header;
     std::string content;
   };
+
+  /**
+   * Creates TUI object with selected titles
+   */
   TUI(const std::string& column_title, const std::string& left_header_title,
       const std::string& right_header_title, const std::string& header_title,
       const std::string& content_title);
+
+  /**
+   * Exits TUI
+   */
   void quit();
+
+  /**
+   * Adds an element to the TUI selection
+   */
   void add_element(element&& el);
+
+  /**
+   * Starts TUI app
+   */
   void run();
 
  private:
@@ -59,6 +78,11 @@ class TUI {
   std::vector<element> els_;
   size_t current_;
 
+  /**
+   * Prints mail to client
+   *
+   * \param mail_no Index of mail to print from els_
+   */
   void print_mail_(size_t mail_no);
 };
 
