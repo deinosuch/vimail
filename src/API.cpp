@@ -61,8 +61,7 @@ void API::init() {
 
   MailClient mc(server);
   mc.login("testervimail@gmail.com", "bcgxcgsmtejfdyhu");
-  map<unsigned long, message> msgs;
-  mc.fetch_mail(msgs);
+  map<unsigned long, message> msgs = mc.fetch_mail();
 
   TUI ui("Inbox", "From", "To", "Subject", "Content");
   for (unsigned long i = msgs.size(); i >= 1; --i) {
@@ -70,6 +69,4 @@ void API::init() {
   }
 
   ui.run();
-
-  ui.quit();
 }

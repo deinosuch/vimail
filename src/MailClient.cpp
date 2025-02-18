@@ -26,7 +26,6 @@
 
 #include <list>
 #include <mailio/mime.hpp>
-#include <string>
 
 using mailio::dialog_error;
 using mailio::imap_error;
@@ -35,6 +34,19 @@ using mailio::message;
 using std::list;
 using std::map;
 using std::string;
+using std::vector;
+
+vector<string> extract_folders(const imaps::mailbox_folder_t &folder) {
+  vector<string> flds;
+  for (auto &f : folder.folders) {
+    flds.push_back(f.first);
+    if (!f.second.folders.empty()) {
+      vector<string> ff = extract_folders(f.second);
+      flds.insert(flds.end(), ff.begin(), ff.end());
+    }
+  }
+  return flds;
+}
 
 void MailClient::login(const string &mail, const string &password) {
   try {
@@ -54,15 +66,25 @@ MailClient::MailClient(const string &server)
   spdlog::info("Connected to server: " + server);
 }
 
-void MailClient::fetch_mail(map<unsigned long, message> &messs) {
+map<unsigned long, message> MailClient::fetch_mail() {
   imaps::mailbox_stat_t stats = connection_.select(curr_mailbox_);
+  map<unsigned long, message> messs;
   list<imaps::messages_range_t> range = {{1, stats.messages_no}};
   try {
     connection_.fetch(range, messs, false, false,
                       mailio::codec::line_len_policy_t::NONE);
   } catch (const mailio::mime_error &exc) {
     spdlog::error(exc.what());
+    throw exc;
   }
 
   spdlog::info("Fetched messages from: " + curr_mailbox_);
+  return messs;
 }
+
+vector<string> MailClient::get_folders() {
+  imaps::mailbox_folder_t flds = connection_.list_folders("");
+  return extract_folders(flds);
+}
+
+void MailClient::select_mailbox(const string &mb) { connection_.select(mb); }

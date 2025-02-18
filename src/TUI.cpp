@@ -51,25 +51,24 @@ void clear_area(WINDOW* win, int start_y, int start_x, int height, int width) {
 }
 
 void print_to_window(WINDOW* win, const std::string& content) {
-  int x_max, y_max;
-  getmaxyx(win, y_max, x_max);
-  y_max -= 2;
-  x_max -= 2;
-  clear_area(win, 1, 1, y_max, x_max);
+  int length_max, height_max;
+  getmaxyx(win, height_max, length_max);
+  height_max -= 2;
+  length_max -= 2;
+  clear_area(win, 1, 1, height_max, length_max);
   wmove(win, 1, 1);
-  int y;
-  y = 1;
+  int y = 1;
   std::istringstream iss(content);
   string line;
   while (std::getline(iss, line)) {
-    while (line.length() > x_max) {
-      if (y > y_max) {
+    while (line.length() > length_max) {
+      if (y > height_max) {
         break;
       }
-      mvwprintw(win, y++, 1, "%s", line.substr(0, x_max).c_str());
-      line = line.substr(x_max);
+      mvwprintw(win, y++, 1, "%s", line.substr(0, length_max).c_str());
+      line = line.substr(length_max);
     }
-    if (y > y_max) {
+    if (y > height_max) {
       break;
     }
 
@@ -108,7 +107,7 @@ TUI::TUI(const string& column_title, const string& left_header_title,
 }
 
 void TUI::quit() {
-  getchar();
+  spdlog::info("Quitting app");
   endwin();
 }
 
@@ -118,12 +117,16 @@ void TUI::add_element(element&& el) {
 }
 
 void TUI::run() {
-  spdlog::info("running application");
+  spdlog::info("Running application");
 
-  int x_column_max, y_column_max;
-  getmaxyx(column_, y_column_max, x_column_max);
-  size_t shown_mails = std::min((size_t)y_column_max, els_.size());
-  while (true) {
+  int length_max, height_max;
+  getmaxyx(column_, height_max, length_max);
+  length_max -= 2;
+  height_max -= 2;
+  size_t shown_mails = std::min((size_t)height_max, els_.size());
+  bool exit = false;
+
+  while (!exit) {
     for (size_t i = 0; i < shown_mails; ++i) {
       if (i == current_) {
         wattron(column_, A_REVERSE);
@@ -131,16 +134,31 @@ void TUI::run() {
       element& el = els_[i];
       wmove(column_, i + 1, 1);
 
-      wattron(column_, A_BOLD);
-      wprintw(column_, "%s", el.header.c_str());
-      wattroff(column_, A_BOLD);
+      size_t header_size = el.header.size();
+      size_t total_size = header_size + el.left_header.size() + 1;
 
-      wprintw(column_, " %s", el.left_header.c_str());
+      wattron(column_, A_BOLD);
+      if (header_size < length_max) {
+        wprintw(column_, "%s", el.header.c_str());
+        wattroff(column_, A_BOLD);
+        if (total_size < length_max) {
+          wprintw(column_, " %s", el.left_header.c_str());
+        } else {
+          wprintw(
+              column_, " %s",
+              el.left_header.substr(0, length_max - header_size - 1).c_str());
+        }
+      } else {
+        wprintw(column_, "%s", el.header.substr(0, length_max).c_str());
+      }
+      wattroff(column_, A_BOLD);
 
       int x, y;
       getyx(column_, y, x);
-      string end_line(x_column_max - x - 1, ' ');
-      wprintw(column_, "%s", end_line.c_str());
+      if (length_max > x) {
+        string end_line(length_max - x + 1, ' ');
+        wprintw(column_, "%s", end_line.c_str());
+      }
 
       wattroff(column_, A_REVERSE);
     }
@@ -157,8 +175,16 @@ void TUI::run() {
       case DOWN:
         current_ += current_ != els_.size() - 1;
         break;
+      case EXIT:
+        exit = true;
+        break;
+      case SELECT_MB:
+        mailboxs_();
+        break;
     }
   }
+
+  quit();
 }
 
 void TUI::print_mail_(size_t mail_no) {
@@ -169,3 +195,5 @@ void TUI::print_mail_(size_t mail_no) {
   print_to_window(header_, el.header);
   print_to_window(content_, el.content);
 }
+
+void TUI::mailboxs_() {}

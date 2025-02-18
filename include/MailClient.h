@@ -26,6 +26,7 @@
 #include <mailio/imap.hpp>
 #include <map>
 #include <string>
+#include <vector>
 
 constexpr int IMAPS_SERVER = 993;
 
@@ -36,14 +37,14 @@ class MailClient {
 
  public:
   /**
-   * Creates a MailClient object and connects to a mail server
+   * Create a MailClient object and connects to a mail server
    *
-   * @param server Server to connect to
+   * \param server Server to connect to
    */
   explicit MailClient(const std::string &server);
 
   /**
-   * Logs in to a mail server
+   * Log in to a mail server
    *
    * \param mail Mail address
    * \param password Password for the address
@@ -51,11 +52,21 @@ class MailClient {
   void login(const std::string &mail, const std::string &password);
 
   /**
-   * Gets mail from a selected mail folder
+   * Get mail from a selected mail folder
    *
-   * @param messs Map to be filled with mails
+   * \param messs Map to be filled with mails
    */
-  void fetch_mail(std::map<unsigned long, mailio::message> &messs);
+  std::map<unsigned long, mailio::message> fetch_mail();
+
+  /**
+   * Get mail folders
+   */
+  std::vector<std::string> get_folders();
+
+  /**
+   * Select mail folder
+   */
+  void select_mailbox(const std::string &mb);
 };
 
 #endif  // INCLUDE_MAILCLIENT_H_

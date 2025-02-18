@@ -34,6 +34,8 @@ constexpr int HEADER_HEIGHT = 3;
 
 constexpr char UP = 'k';
 constexpr char DOWN = 'j';
+constexpr char EXIT = 'q';
+constexpr char SELECT_MB = 'm';
 
 class TUI {
  public:
@@ -77,6 +79,7 @@ class TUI {
   WINDOW* header_;
   std::vector<element> els_;
   size_t current_;
+  std::vector<std::string> folders_;
 
   /**
    * Prints mail to client
@@ -84,6 +87,11 @@ class TUI {
    * \param mail_no Index of mail to print from els_
    */
   void print_mail_(size_t mail_no);
+
+  /**
+   * Shows mailbox popup
+   */
+  void mailboxs_();
 };
 
 #endif  // INCLUDE_TUI_H_
