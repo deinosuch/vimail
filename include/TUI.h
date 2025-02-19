@@ -36,7 +36,7 @@ constexpr int UP = 'k';
 constexpr int DOWN = 'j';
 constexpr int EXIT = 'q';
 constexpr int SELECT_MB = 'm';
-constexpr int SELECT = KEY_ENTER;
+constexpr int SELECT = 13;
 
 class TUI {
  public:
@@ -81,6 +81,7 @@ class TUI {
   WINDOW* right_header_;
   WINDOW* header_;
   std::vector<element> els_;
+  size_t current;
   std::vector<std::string> folders_;
 
   /**

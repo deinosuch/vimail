@@ -83,6 +83,8 @@ TUI::TUI(const string& column_title, const string& left_header_title,
   spdlog::info("Initiliazing terminal app");
 
   initscr();
+  cbreak();
+  keypad(stdscr, TRUE);
   noecho();
 
   int left_width = COLS / SPLIT_RATIO;
@@ -131,6 +133,7 @@ void TUI::run() {
   size_t current = 0;
 
   while (!exit) {
+    clear_area(column_, 1, 1, height_max, length_max);
     for (size_t i = 0; i < shown_mails; ++i) {
       if (i == current) {
         wattron(column_, A_REVERSE);
@@ -230,7 +233,8 @@ void TUI::mailboxs_(int length_max, int height_max, bool& exit) {
     }
     wrefresh(column_);
 
-    char input = getchar();
+    int input = getchar();
+    spdlog::info("Pressed character: {}", input);
 
     switch (input) {
       case UP:
