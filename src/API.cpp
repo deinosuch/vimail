@@ -27,6 +27,7 @@
 
 #include <mailio/message.hpp>
 #include <string>
+#include <utility>
 
 #include "MailClient.h"
 #include "TUI.h"
@@ -34,6 +35,7 @@
 using mailio::message;
 using std::map;
 using std::string;
+using std::vector;
 
 TUI::element export_message(const message& mess) {
   std::string content;
@@ -62,8 +64,13 @@ void API::init() {
   MailClient mc(server);
   mc.login("testervimail@gmail.com", "bcgxcgsmtejfdyhu");
   map<unsigned long, message> msgs = mc.fetch_mail();
+  vector<string> flds = mc.get_folders();
 
   TUI ui("Inbox", "From", "To", "Subject", "Content");
+  for (size_t i = 0; i < flds.size(); ++i) {
+    ui.add_folder(std::move(flds[i]));
+  }
+
   for (unsigned long i = msgs.size(); i >= 1; --i) {
     ui.add_element(export_message(msgs[i]));
   }

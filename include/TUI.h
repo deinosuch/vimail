@@ -32,10 +32,11 @@ constexpr int SPLIT_RATIO = 4;
 constexpr int TITLE_OFFSET = 3;
 constexpr int HEADER_HEIGHT = 3;
 
-constexpr char UP = 'k';
-constexpr char DOWN = 'j';
-constexpr char EXIT = 'q';
-constexpr char SELECT_MB = 'm';
+constexpr int UP = 'k';
+constexpr int DOWN = 'j';
+constexpr int EXIT = 'q';
+constexpr int SELECT_MB = 'm';
+constexpr int SELECT = KEY_ENTER;
 
 class TUI {
  public:
@@ -71,6 +72,8 @@ class TUI {
    */
   void run();
 
+  void add_folder(std::string&& fld);
+
  private:
   WINDOW* column_;
   WINDOW* content_;
@@ -78,7 +81,6 @@ class TUI {
   WINDOW* right_header_;
   WINDOW* header_;
   std::vector<element> els_;
-  size_t current_;
   std::vector<std::string> folders_;
 
   /**
@@ -91,7 +93,7 @@ class TUI {
   /**
    * Shows mailbox popup
    */
-  void mailboxs_();
+  void mailboxs_(int length_max, int height_max, bool& exit);
 };
 
 #endif  // INCLUDE_TUI_H_

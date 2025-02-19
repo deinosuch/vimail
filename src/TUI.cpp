@@ -101,8 +101,6 @@ TUI::TUI(const string& column_title, const string& left_header_title,
   content_ = create_window(LINES - 2 * HEADER_HEIGHT, right_width,
                            2 * HEADER_HEIGHT, left_width, content_title);
 
-  current_ = 0;
-
   spdlog::info("Created app windows");
 }
 
@@ -116,6 +114,11 @@ void TUI::add_element(element&& el) {
   spdlog::info("Added new mail: " + els_[els_.size() - 1].header);
 }
 
+void TUI::add_folder(string&& fld) {
+  folders_.push_back(std::move(fld));
+  spdlog::info("Added new folder: " + folders_[folders_.size() - 1]);
+}
+
 void TUI::run() {
   spdlog::info("Running application");
 
@@ -125,10 +128,11 @@ void TUI::run() {
   height_max -= 2;
   size_t shown_mails = std::min((size_t)height_max, els_.size());
   bool exit = false;
+  size_t current = 0;
 
   while (!exit) {
     for (size_t i = 0; i < shown_mails; ++i) {
-      if (i == current_) {
+      if (i == current) {
         wattron(column_, A_REVERSE);
       }
       element& el = els_[i];
@@ -164,22 +168,22 @@ void TUI::run() {
     }
     wrefresh(column_);
 
-    print_mail_(current_);
+    print_mail_(current);
 
     char input = getchar();
 
     switch (input) {
       case UP:
-        current_ -= current_ != 0;
+        current -= current != 0;
         break;
       case DOWN:
-        current_ += current_ != els_.size() - 1;
+        current += current != shown_mails - 1;
         break;
       case EXIT:
         exit = true;
         break;
       case SELECT_MB:
-        mailboxs_();
+        mailboxs_(length_max, height_max, exit);
         break;
     }
   }
@@ -196,4 +200,51 @@ void TUI::print_mail_(size_t mail_no) {
   print_to_window(content_, el.content);
 }
 
-void TUI::mailboxs_() {}
+void TUI::mailboxs_(int length_max, int height_max, bool& exit) {
+  size_t shown_folders = std::min((size_t)height_max, folders_.size());
+  size_t current = 0;
+  bool selection = false;
+
+  while (!exit && !selection) {
+    for (size_t i = 0; i < shown_folders; ++i) {
+      if (i == current) {
+        wattron(column_, A_REVERSE);
+      }
+      wmove(column_, i + 1, 1);
+      string fld = folders_[i];
+
+      if (fld.size() < length_max) {
+        wprintw(column_, "%s", fld.c_str());
+      } else {
+        wprintw(column_, "%s", fld.substr(0, length_max).c_str());
+      }
+
+      int x, y;
+      getyx(column_, y, x);
+      if (length_max > x) {
+        string end_line(length_max - x + 1, ' ');
+        wprintw(column_, "%s", end_line.c_str());
+      }
+
+      wattroff(column_, A_REVERSE);
+    }
+    wrefresh(column_);
+
+    char input = getchar();
+
+    switch (input) {
+      case UP:
+        current -= current != 0;
+        break;
+      case DOWN:
+        current += current != shown_folders - 1;
+        break;
+      case EXIT:
+        exit = true;
+        break;
+      case SELECT:
+        selection = true;
+        break;
+    }
+  }
+}
